@@ -46,7 +46,7 @@ class CmsPageUrlRewriteGeneratorTest extends TestCase
     private $urlRewriteGenerator;
 
     /**
-     * @inheritdoc
+     * @return void
      */
     protected function setUp(): void
     {
@@ -54,7 +54,7 @@ class CmsPageUrlRewriteGeneratorTest extends TestCase
         $this->storeManager = $this->getMockBuilder(StoreManagerInterface::class)
             ->getMockForAbstractClass();
         $this->urlRewriteFactory = $this->getMockBuilder(UrlRewriteFactory::class)
-            ->onlyMethods(['create'])
+            ->setMethods(['create'])
             ->disableOriginalConstructor()
             ->getMock();
         $this->urlPathGenerator = $this->getMockBuilder(CmsPageUrlPathGenerator::class)
@@ -70,10 +70,7 @@ class CmsPageUrlRewriteGeneratorTest extends TestCase
         );
     }
 
-    /**
-     * @return void
-     */
-    public function testGenerateForAllStores(): void
+    public function testGenerateForAllStores()
     {
         $initializesStores = [0];
         $cmsPageId = 1;
@@ -82,7 +79,7 @@ class CmsPageUrlRewriteGeneratorTest extends TestCase
             ->getMock();
         $cmsPage->expects($this->any())->method('getStores')->willReturn($initializesStores);
         $store = $this->getMockBuilder(StoreInterface::class)
-            ->addMethods(['getStoreId'])
+            ->setMethods(['getStoreId'])
             ->getMockForAbstractClass();
         $this->storeManager->expects($this->any())->method('getStores')->willReturn([$store]);
         $store->expects($this->any())->method('getStoreId')->willReturn($initializesStores[0]);
@@ -99,10 +96,7 @@ class CmsPageUrlRewriteGeneratorTest extends TestCase
         $this->assertArrayNotHasKey(1, $urls);
     }
 
-    /**
-     * @return void
-     */
-    public function testGenerateForSpecificStores(): void
+    public function testGenerateForSpecificStores()
     {
         $initializesStores = [1, 2];
         $cmsPageId = 1;
@@ -111,10 +105,10 @@ class CmsPageUrlRewriteGeneratorTest extends TestCase
             ->getMock();
         $cmsPage->expects($this->any())->method('getStores')->willReturn($initializesStores);
         $firstStore = $this->getMockBuilder(StoreInterface::class)
-            ->addMethods(['getStoreId'])
+            ->setMethods(['getStoreId'])
             ->getMockForAbstractClass();
         $secondStore = $this->getMockBuilder(StoreInterface::class)
-            ->addMethods(['getStoreId'])
+            ->setMethods(['getStoreId'])
             ->getMockForAbstractClass();
         $this->storeManager->expects($this->any())->method('getStores')->willReturn(
             [
@@ -129,9 +123,8 @@ class CmsPageUrlRewriteGeneratorTest extends TestCase
             ->getMockForAbstractClass();
         $urlRewriteSecond = $this->getMockBuilder(UrlRewrite::class)
             ->getMockForAbstractClass();
-        $this->urlRewriteFactory
-            ->method('create')
-            ->willReturnOnConsecutiveCalls($urlRewriteFirst, $urlRewriteSecond);
+        $this->urlRewriteFactory->expects($this->at(0))->method('create')->willReturn($urlRewriteFirst);
+        $this->urlRewriteFactory->expects($this->at(1))->method('create')->willReturn($urlRewriteSecond);
 
         $cmsPage->expects($this->any())->method('getId')->willReturn($cmsPageId);
         $cmsPage->expects($this->any())->method('getIdentifier')->willReturn('request_path');
@@ -145,7 +138,7 @@ class CmsPageUrlRewriteGeneratorTest extends TestCase
             ],
             [
                 $urls[0]->getStoreId(),
-                $urls[1]->getStoreId()
+                $urls[1]->getStoreId(),
             ]
         );
     }
